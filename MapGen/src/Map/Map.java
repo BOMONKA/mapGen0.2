@@ -6,6 +6,10 @@ public class Map {
 	
 	private final int gridSize = 1000;
 	
+	public int getGridSize() {
+		return gridSize;
+	}
+
 	public Tile[][] map = new Tile[gridSize][gridSize];
 	
 	
@@ -14,25 +18,16 @@ public class Map {
 	//the actual function
 	public void generate(long genSeed)
 	{
-		seed = genSeed;
+		//seed = genSeed;
+		rnd = new Random(genSeed);
 		midpointDisplacementGen();
-		for(int i = 0; i<260; i++)
-			blur();
+			blur(250);
 		sharpen();
 		//flattenWater();
 	}
 	
-	//graphics options
-	int heightSand = 5100;
-	int heightForest = 6500;
-	int heightGrass = 7500;
-	int heightRock = 9500;
-	
-	
-	
-	
-	private long seed;
-	Random rnd = new Random(seed);
+	//private long seed;
+	Random rnd;
 	
 	public int getAverageSurround(int x, int y, int deltax, int deltay)
 	{
@@ -43,14 +38,14 @@ public class Map {
 		int nexty = y;
 		try
 		{
-			sum+=map[nextx][nexty].getHeight();
+			sum+=map[nextx%gridSize][nexty%gridSize].getHeight();
 			s++;
 		}catch(Exception e){}
 		
 		nextx = x+deltax;
 		try
 		{
-			sum+=map[nextx][nexty].getHeight();
+			sum+=map[nextx%gridSize][nexty%gridSize].getHeight();
 			s++;
 		}catch(Exception e){}
 		
@@ -58,14 +53,14 @@ public class Map {
 		nexty = y - deltay;
 		try
 		{
-			sum+=map[nextx][nexty].getHeight();
+			sum+=map[nextx%gridSize][nexty%gridSize].getHeight();
 			s++;
 		}catch(Exception e){}
 		
 		nexty = y + deltay;
 		try
 		{
-			sum+=map[nextx][nexty].getHeight();
+			sum+=map[nextx%gridSize][nexty%gridSize].getHeight();
 			s++;
 		}catch(Exception e){}
 		
@@ -117,7 +112,6 @@ public class Map {
 			int nnoise = (int) (noise*reductor);
 			if (nnoise<2)
 				nnoise = 1;
-			//System.out.println(nnoise);
 			doMidPoint(x1, y1, x, y, nnoise);
 			doMidPoint(x, y1, x2, y, nnoise);
 			doMidPoint(x1, y, x, y2, nnoise);
@@ -127,7 +121,7 @@ public class Map {
 	}
 	
 	public int maxheight = 10000;
-	public int waterLevel = maxheight/2;
+	public int waterLevel = 5000;
 	public int firstNoise = maxheight/2;
 	public double reductor = 0.7;
 	
@@ -141,26 +135,23 @@ public class Map {
 			}
 		
 		doMidPoint(0,0,gridSize-1,gridSize-1, firstNoise);
-		/*for (int i=0; i < 1000; i++)
-			for (int j=0; j <1000; j++)
-			{
-				//if(map[i][j].getHeight()>1000)
-				map[i][j] = new Tile(maxheight/2);
-			}*/
 	}
 	
-	public void blur()
+	public void blur(int amount)
 	{
-		for (int i=0; i < gridSize-1; i++)
-			for (int j=0; j <gridSize-1; j++)
-			{
-				map[i+rnd.nextInt(2)][j+rnd.nextInt(2)].setHeight(
-						(map[i][j].getHeight()+
-								map[i+1][j].getHeight()+
-								map[i][j+1].getHeight()+
-								map[i+1][j+1].getHeight()
-								)/4);
-			}
+		for(int a = 0; a<amount; a++)
+		{
+			for (int i=0; i < gridSize; i++)
+				for (int j=0; j <gridSize; j++)
+				{
+					map[(i+rnd.nextInt(2))%gridSize][(j+rnd.nextInt(2))%gridSize].setHeight(
+							(map[i][j].getHeight()+
+									map[(i+1)%gridSize][j].getHeight()+
+									map[i][(j+1)%gridSize].getHeight()+
+									map[(i+1)%gridSize][(j+1)%gridSize].getHeight()
+									)/4);
+				}
+		}
 	}
 	
 	public void flattenWater()
@@ -178,19 +169,15 @@ public class Map {
 			for (int j=0; j <gridSize; j++)
 				if(map[i][j].getHeight()>realmax)
 					realmax = map[i][j].getHeight();
-		realmax-=waterLevel;
+		//realmax;
 		
-		double coeff = (maxheight-waterLevel)/realmax;
+		double coeff = (maxheight)/realmax;
 		for (int i=0; i < gridSize; i++)
 			for (int j=0; j <gridSize; j++)
 			{
 				int x = i;
 				int y = j;
-				if(map[x][y].getHeight()>waterLevel)
-				{
-					int diff = map[x][y].getHeight() - waterLevel;
-					map[x][y].setHeight((int)(waterLevel+diff*coeff));
-				}
+					map[i][j].setHeight((int) (map[i][j].getHeight()*coeff));
 			}
 	}
 	
@@ -199,32 +186,4 @@ public class Map {
         return Math.sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) );
     }
 	
-	/*public void mountainGen(int x, int y)
-	{
-		Random rand = new Random();
-	
-		int dx = 50, dy = 50;
-		
-		try
-		{
-		for (int i=x-dx; i < x+dx; i++)
-		{
-			for (int j=y-dy; j <y+dy; j++)
-			{	
-				int pike = rand.nextInt(10000);
-				map[i][j] = new Tile(pike);
-			}
-			
-			//pike--;
-		}
-		}
-		catch (Exception ex)
-		{
-			
-		}
-	}*/
-	
-	
-	
-
 }
