@@ -49,7 +49,7 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	private void init()
 	{
 		map = new Map();
-		map.generate(16);
+		map.generate(17);
 		this.add(panel);
 		this.setSize(width, height);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -85,62 +85,20 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
                 if(tileY<0)
                 	tileY = (j + cameraY/mod)%(map.getGridSize()) + map.getGridSize();
                 
-                try
-                {
-                int d = (map.map[tileX][tileY].getHeight()*255/map.maxheight);
+                int d = ((map.map[tileX][tileY].getHeight()*255)/map.maxheight);
+                d = (d-80)*255/(120);
+                g.setColor(new Color(d,d,d));
                 
+                if(map.map[tileX][tileY].getWaterLevel()>0)
+                	g.setColor(Color.BLUE);
                 
-                if (map.map[tileX][tileY].getHeight()>map.waterLevel)
-                {
-                    if (map.map[tileX][tileY].getHeight()>5050)
-                    {
-                        
-                    
-                    if (map.map[tileX][tileY].getHeight()>7050)
-                    {
-                        if (map.map[tileX][tileY].getHeight()>8000)
-                        {
-                            g.setColor(new Color(d,d,d));
-                        } else
-                        {
-                            d = d /2;
-                            g.setColor(new Color(d,d,d));
-                        }
-                    }
-                    else 
-                    {
-                        g.setColor(new Color(0,255-d,0));
-                        
-                    }
-                    }
-                    else {
-                        g.setColor(Color.ORANGE);
-                    }
-                }
-                else 
-                {
-                	d*=2;
-                    g.setColor(new Color(0,0,d));
-                }
-                
-                if(tileX == 0 || tileY == 0) //draws red lines on edges
-                		g.setColor(Color.RED);
-                
+                if(tileX == 0 || tileY == 0)
+                	g.setColor(Color.RED);
                 g.fillRect(i*mod - cameraX % mod, j*mod - cameraY % mod, mod, mod);
-                }
-                catch
-                ( Exception ex)
-                {
-                    
-                }
             }
 		panel.getGraphics().drawImage(buffer, 0, 0, null);
 		panel.setPreferredSize(new Dimension(width,height));
 		panel.setVisible(true);
-	
-		//map.waterLevel = s;
-		//s+=1;
-		//this.setTitle("water = "+s+"m");
 	}
 	
 	public void start()
@@ -156,12 +114,14 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	//	System.out.println(width + " " + height);
 	}
 
+	
 	@Override
 	public void run() {
 	
 		while(isRunning)
 		{
 			check();
+			map.updateWater();
 			draw();
 		//	System.out.println(this.getMousePosition().getX()+ " " + this.getMousePosition().getY());
 			try {
@@ -178,7 +138,14 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		
-		//map.mountainGen((cameraX+e.getX())/mod, (cameraY+e.getY())/mod);
+		int x = ((cameraX+e.getX())/mod)%map.getGridSize();
+		if(x < 0)
+			x+=map.getGridSize();
+		int y = ((cameraY+e.getY())/mod)%map.getGridSize();
+		if(y < 0)
+			y+=map.getGridSize();
+		
+		map.addWater(x, y, 100000);
 		
 	}
 
@@ -266,6 +233,8 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 			map.waterLevel += 10;
 		if(45 == e.getKeyCode())
 			map.waterLevel -= 10;
+		if(66 == e.getKeyCode())
+			map.blur(10);
 	}
 
 	@Override

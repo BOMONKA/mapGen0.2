@@ -21,8 +21,8 @@ public class Map {
 		//seed = genSeed;
 		rnd = new Random(genSeed);
 		midpointDisplacementGen();
-			blur(250);
-		sharpen();
+		blur(300);
+		//sharpen();
 		//flattenWater();
 	}
 	
@@ -120,10 +120,133 @@ public class Map {
 		
 	}
 	
-	public int maxheight = 10000;
-	public int waterLevel = 5000;
+	public void addWater(int x, int y, double amount)
+	{
+		map[x][y].setWaterLevel(map[x][y].getWaterLevel()+amount);
+	}
+	
+	public void removeWater(int x, int y, double amount)
+	{
+		map[x][y].setWaterLevel(map[x][y].getWaterLevel()-amount);
+		if(map[x][y].getWaterLevel()<0)
+			map[x][y].setWaterLevel(0);
+	}
+	
+	public void updateWater()
+	{
+		int targetX, targetY, delta, newX, newY;
+		double sumWater;
+		boolean found;
+		for(int y = 0; y<gridSize; y++)
+			for(int x = 0; x<gridSize; x++)
+			{
+				if(map[x][y].getWaterLevel()>0)
+				{
+					
+					found = false;
+					targetX = x;
+					targetY = y;
+					//System.out.println(1);
+					
+					
+					newX = (x+1)%gridSize;
+					if(newX<0)
+						newX+=gridSize;
+					newY = y;
+					
+					if(((map[newX][newY].getHeight() + map[newX][newY].getWaterLevel()) < (map[targetX][targetY].getHeight()+map[targetX][targetY].getWaterLevel())))
+					{
+						targetX = newX;
+						targetY = newY;
+						found = true;
+						//System.out.println(2);
+					}
+					
+					newX = (x-1)%gridSize;
+					if(newX<0)
+						newX+=gridSize;
+					newY = y;
+					
+					if(((map[newX][newY].getHeight() + map[newX][newY].getWaterLevel()) < (map[targetX][targetY].getHeight()+map[targetX][targetY].getWaterLevel())))
+					{
+						targetX = newX;
+						targetY = newY;
+						found = true;
+						//System.out.println(3);
+					}
+					
+					newX = x;
+					newY = (y+1)%gridSize;
+					if(newY<0)
+						newY+=gridSize;
+					
+					if(((map[newX][newY].getHeight() + map[newX][newY].getWaterLevel()) < (map[targetX][targetY].getHeight()+map[targetX][targetY].getWaterLevel())))
+					{
+						targetX = newX;
+						targetY = newY;
+						found = true;
+						//System.out.println(4);
+					}
+					
+					newX = x;
+					newY = (y-1)%gridSize;
+					if(newY<0)
+						newY+=gridSize;
+					
+					if(((map[newX][newY].getHeight() + map[newX][newY].getWaterLevel()) < (map[targetX][targetY].getHeight()+map[targetX][targetY].getWaterLevel())))
+					{
+						targetX = newX;
+						targetY = newY;
+						found = true;
+						//System.out.println(5);
+					}
+					
+					if(found)
+					{
+						delta = map[x][y].getHeight() - map[targetX][targetY].getHeight();
+						sumWater = map[x][y].getWaterLevel() + map[targetX][targetY].getWaterLevel();
+						if(delta>0)
+							{
+								if(sumWater>delta)
+								{
+									map[targetX][targetY].setWaterLevel(delta);
+									sumWater-=delta;
+									map[x][y].setWaterLevel(sumWater/2);
+									addWater(targetX, targetY, sumWater/2);
+								}
+								else
+								{
+									map[x][y].setWaterLevel(0);
+									map[targetX][targetY].setWaterLevel(sumWater);
+								}
+							}
+						else
+							{
+								if(sumWater>delta)
+								{
+									map[x][y].setWaterLevel(delta);
+									sumWater-=delta;
+									map[targetX][targetY].setWaterLevel(sumWater/2);
+									addWater(x, y, sumWater/2);
+								}
+								else
+								{
+									map[targetX][targetY].setWaterLevel(0);
+									map[x][y].setWaterLevel(sumWater);
+								}
+							}
+						//addWater(targetX, targetY, 1);
+						//removeWater(x, y, 1);
+					}
+					
+				}
+			}
+		}
+	
+	public int maxheight = 100000;
+	public int waterLevel = 50000;
 	public int firstNoise = maxheight/2;
-	public double reductor = 0.7;
+	public double reductor = 0.6;
 	
 	public void midpointDisplacementGen()
 	{
