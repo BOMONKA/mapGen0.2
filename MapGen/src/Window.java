@@ -68,10 +68,12 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	{
 		BufferedImage buffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 		
+		double sWater = 0;
+		
 		Graphics g = buffer.createGraphics();
 		int tileX, tileY;
 		int min = 255;
-		int max = 0;
+		int max = 1;
 		
 		for (int i = 0; i < map.getGridSize(); i++)
 			for (int j = 0; j < map.getGridSize(); j++)
@@ -81,6 +83,7 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	            	 max = d;
 	             if (min > d)
 	             	min = d;
+	             sWater+=map.map[i][j].getWaterLevel();
 	             
 			}
 		
@@ -118,7 +121,7 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		try
 		{
 			g.setColor(Color.red);
-			int x = ((int)(cameraY+panel.getMousePosition().getX())/mod)%map.getGridSize();
+			int x = ((int)(cameraX+panel.getMousePosition().getX())/mod)%map.getGridSize();
 			if(x < 0)
 				x+=map.getGridSize();
 			int y = ((int)(cameraY+panel.getMousePosition().getY())/mod)%map.getGridSize();
@@ -127,7 +130,7 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 			int h = map.map[x][y].getHeight();
 			double w = map.map[x][y].getWaterLevel();
 		g.drawString( "MOUSE POS "+panel.getMousePosition().getX() + " " + panel.getMousePosition().getY(), 10, 20); 
-		g.drawString("TILE POS " + x + " " + y + " H " + h + " W " + w,10, 30);
+		g.drawString("TILE POS [" + x + ";" + y + "] H [" + h + "] W [" + w+"]"+"; SumWater: "+sWater,10, 30);
 		
 		
 		 g.drawRect(x*mod - cameraX % mod, y*mod - cameraY % mod, mod, mod);
@@ -135,6 +138,13 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		catch (Exception e)
 		{
 			
+		}
+		
+		try {
+			Thread.sleep(1);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		panel.getGraphics().drawImage(buffer, 0, 0, null);
 		panel.setPreferredSize(new Dimension(width,height));
@@ -178,12 +188,16 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		
-		int x = ((cameraX+e.getX())/mod)%map.getGridSize();
-		
-		int y = ((cameraY+e.getY())/mod)%map.getGridSize();
-		
-		
-		map.addWaterSource(x, y);
+		if(e.BUTTON1 == e.getButton())
+		{
+			int x = ((cameraX+e.getX())/mod)%map.getGridSize();
+			if(x<0)
+				x+=map.getGridSize();
+			int y = ((cameraY+e.getY())/mod)%map.getGridSize();
+			if(y<0)
+				y+=map.getGridSize();
+			map.addWaterSource(x, y);
+		}
 		
 	}
 

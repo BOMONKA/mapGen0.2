@@ -5,7 +5,7 @@ import java.util.Random;
 
 public class Map {
 	
-	private final int gridSize = 1000;
+	private final int gridSize = 500;
 	
 	public int getGridSize() {
 		return gridSize;
@@ -149,7 +149,8 @@ public class Map {
 		
 		for (WaterSource w : wc)
 		{
-			map[w.getX()][w.getY()].setWaterLevel(map[w.getX()][w.getY()].getWaterLevel() + 1);
+			//map[w.getX()][w.getY()].setWaterLevel(map[w.getX()][w.getY()].getWaterLevel() + 1);
+			addWater(w.getX(), w.getY(), 100);
 		}
 		
 		for(int y = 0; y<gridSize; y++)
@@ -231,7 +232,7 @@ public class Map {
 								}
 								else
 								{
-									map[x][y].setWaterLevel(sumWater/2);
+									map[x][y].setWaterLevel(0);
 									map[targetX][targetY].setWaterLevel(sumWater);
 								}
 							}
@@ -261,7 +262,7 @@ public class Map {
 	public int maxheight = 100000;
 	public int waterLevel = 50000;
 	public int firstNoise = maxheight/2;
-	public double reductor = 0.6;
+	public double reductor = 0.8;
 	
 	public void midpointDisplacementGen()
 	{
