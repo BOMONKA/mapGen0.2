@@ -2,11 +2,10 @@ package Map;
 
 public class Tile {
 	
-	private int height;
+	private double height;
 	private double waterLevel;
 	
-	
-	
+
 	public double getWaterLevel() {
 		return waterLevel;
 	}
@@ -21,12 +20,12 @@ public class Tile {
 		this.waterLevel = 0;
 	}
 	
-	public int getHeight()
+	public double getHeight()
 	{
 		return height;
 	}
 	
-	public void setHeight(int height)
+	public void setHeight(double height)
 	{
 		this.height = height;
 	}

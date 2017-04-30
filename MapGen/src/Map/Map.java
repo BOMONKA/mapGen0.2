@@ -1,5 +1,6 @@
 package Map;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Map {
@@ -11,8 +12,7 @@ public class Map {
 	}
 
 	public Tile[][] map = new Tile[gridSize][gridSize];
-	
-	
+	public ArrayList<WaterSource> wc = new ArrayList<WaterSource>();
 	
 	
 	//the actual function
@@ -22,12 +22,29 @@ public class Map {
 		rnd = new Random(genSeed);
 		midpointDisplacementGen();
 		blur(300);
-		//sharpen();
+		//midElevate(gridSize*5);
+		//blur(1);
 		//flattenWater();
 	}
 	
+	private void midElevate(int midElevation) {
+		double furthestDist = gridSize*Math.sqrt(2);
+		//double elevPerMeter = midElevation/furthestDist;
+		for(int y = 0; y<gridSize; y++)
+			for(int x = 0; x<gridSize; x++)
+			{
+				map[x][y].setHeight((int) (map[x][y].getHeight()+midElevation*(furthestDist - distance(x, y, gridSize/2, gridSize/2))/furthestDist));
+			}
+				
+	}
+
 	//private long seed;
 	Random rnd;
+	
+	public void addWaterSource(int x, int y)
+	{
+		wc.add(new WaterSource(x,y));
+	}
 	
 	public int getAverageSurround(int x, int y, int deltax, int deltay)
 	{
@@ -79,7 +96,7 @@ public class Map {
 		map[x1][y2].setHeight(map[x1][y2].getHeight()+rnd.nextInt(noise*2)-noise);
 		map[x2][y1].setHeight(map[x2][y1].getHeight()+rnd.nextInt(noise*2)-noise);
 		
-		int midAvg = (map[x1][y1].getHeight()+
+		double midAvg = (map[x1][y1].getHeight()+
 				map[x2][y2].getHeight()+
 				map[x1][y2].getHeight()+
 				map[x2][y1].getHeight())/4;
@@ -134,9 +151,19 @@ public class Map {
 	
 	public void updateWater()
 	{
-		int targetX, targetY, delta, newX, newY;
-		double sumWater;
+		int targetX, targetY, newX, newY;
+		double sumWater, delta;
 		boolean found;
+		
+		
+		
+		
+		for (WaterSource w : wc)
+		{
+			//map[w.getX()][w.getY()].setWaterLevel(map[w.getX()][w.getY()].getWaterLevel() + 1);
+			addWater(w.getX(), w.getY(), 250);
+		}
+		
 		for(int y = 0; y<gridSize; y++)
 			for(int x = 0; x<gridSize; x++)
 			{
@@ -211,7 +238,7 @@ public class Map {
 								{
 									map[targetX][targetY].setWaterLevel(delta);
 									sumWater-=delta;
-									map[x][y].setWaterLevel(sumWater/2);
+									map[x][y].setWaterLevel(sumWater/2); // izmenil ctobi norm bilo 
 									addWater(targetX, targetY, sumWater/2);
 								}
 								else
@@ -235,10 +262,8 @@ public class Map {
 									map[x][y].setWaterLevel(sumWater);
 								}
 							}
-						//addWater(targetX, targetY, 1);
-						//removeWater(x, y, 1);
+						
 					}
-					
 				}
 			}
 		}
@@ -246,7 +271,7 @@ public class Map {
 	public int maxheight = 100000;
 	public int waterLevel = 50000;
 	public int firstNoise = maxheight/2;
-	public double reductor = 0.6;
+	public double reductor = 0.1;
 	
 	public void midpointDisplacementGen()
 	{
@@ -287,12 +312,11 @@ public class Map {
 	
 	public void sharpen()
 	{
-		int realmax = 0;
+		double realmax = 0;
 		for (int i=0; i < gridSize; i++)
 			for (int j=0; j <gridSize; j++)
 				if(map[i][j].getHeight()>realmax)
 					realmax = map[i][j].getHeight();
-		//realmax;
 		
 		double coeff = (maxheight)/realmax;
 		for (int i=0; i < gridSize; i++)
