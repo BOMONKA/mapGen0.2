@@ -1,5 +1,6 @@
 package Map;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Map {
@@ -11,7 +12,7 @@ public class Map {
 	}
 
 	public Tile[][] map = new Tile[gridSize][gridSize];
-	
+	public ArrayList<WaterSource> wc = new ArrayList<WaterSource>();
 	
 	
 	
@@ -28,6 +29,11 @@ public class Map {
 	
 	//private long seed;
 	Random rnd;
+	
+	public void addWaterSource(int x, int y)
+	{
+		wc.add(new WaterSource(x,y));
+	}
 	
 	public int getAverageSurround(int x, int y, int deltax, int deltay)
 	{
@@ -137,6 +143,15 @@ public class Map {
 		int targetX, targetY, delta, newX, newY;
 		double sumWater;
 		boolean found;
+		
+		
+		
+		
+		for (WaterSource w : wc)
+		{
+			map[w.getX()][w.getY()].setWaterLevel(map[w.getX()][w.getY()].getWaterLevel() + 1);
+		}
+		
 		for(int y = 0; y<gridSize; y++)
 			for(int x = 0; x<gridSize; x++)
 			{
@@ -211,12 +226,12 @@ public class Map {
 								{
 									map[targetX][targetY].setWaterLevel(delta);
 									sumWater-=delta;
-									map[x][y].setWaterLevel(sumWater/2);
+									map[x][y].setWaterLevel(sumWater/2); // izmenil ctobi norm bilo 
 									addWater(targetX, targetY, sumWater/2);
 								}
 								else
 								{
-									map[x][y].setWaterLevel(0);
+									map[x][y].setWaterLevel(sumWater/2);
 									map[targetX][targetY].setWaterLevel(sumWater);
 								}
 							}
