@@ -168,10 +168,10 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	@Override
 	public void run() {
 	
+		map.start();
 		while(isRunning)
 		{
 			check();
-			map.updateWater();
 			draw();
 		//	System.out.println(this.getMousePosition().getX()+ " " + this.getMousePosition().getY());
 			try {

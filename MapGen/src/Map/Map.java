@@ -3,9 +3,9 @@ package Map;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Map {
+public class Map implements Runnable {
 	
-	private final int gridSize = 500;
+	private final int gridSize = 2000;
 	
 	public int getGridSize() {
 		return gridSize;
@@ -13,8 +13,12 @@ public class Map {
 
 	public Tile[][] map = new Tile[gridSize][gridSize];
 	public ArrayList<WaterSource> wc = new ArrayList<WaterSource>();
-	
-	
+	public ArrayList<Tile> updTiles = new ArrayList<Tile>();
+	public int maxheight = 100000;
+	public int waterLevel = 50000;
+	public int firstNoise = maxheight/8;
+	public double reductor = 0.1;
+	private long startTime;
 	
 	//the actual function
 	public void generate(long genSeed)
@@ -140,6 +144,8 @@ public class Map {
 	
 	public void updateWater()
 	{
+		
+		updTiles = new ArrayList<Tile>();
 		int targetX, targetY, delta, newX, newY;
 		double sumWater;
 		boolean found;
@@ -156,7 +162,7 @@ public class Map {
 		for(int y = 0; y<gridSize; y++)
 			for(int x = 0; x<gridSize; x++)
 			{
-				if(map[x][y].getWaterLevel()>0)
+				if(map[x][y].getWaterLevel()>0 )
 				{
 					
 					found = false;
@@ -217,6 +223,7 @@ public class Map {
 						//System.out.println(5);
 					}
 					
+					
 					if(found)
 					{
 						delta = map[x][y].getHeight() - map[targetX][targetY].getHeight();
@@ -250,19 +257,20 @@ public class Map {
 									map[targetX][targetY].setWaterLevel(0);
 									map[x][y].setWaterLevel(sumWater);
 								}
+								
 							}
 						//addWater(targetX, targetY, 1);
 						//removeWater(x, y, 1);
+						map[targetX][targetY].setUpdated(true);
 					}
 					
 				}
+				map[x][y].setUpdated(false);
+				
 			}
 		}
 	
-	public int maxheight = 100000;
-	public int waterLevel = 50000;
-	public int firstNoise = maxheight/2;
-	public double reductor = 0.8;
+
 	
 	public void midpointDisplacementGen()
 	{
@@ -317,12 +325,36 @@ public class Map {
 				int x = i;
 				int y = j;
 					map[i][j].setHeight((int) (map[i][j].getHeight()*coeff));
-			}
+			}	
 	}
 	
 	private double distance(int x1, int y1, int x2, int y2)
     {
         return Math.sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) );
     }
+	
+	public void start()
+	{
+		new Thread(this).start();
+	}
+
+	@Override
+	public void run() {
+		while (true)
+		{
+			startTime = System.currentTimeMillis();
+				updateWater();
+			long deltaTime = System.currentTimeMillis() - startTime;
+			System.out.println(deltaTime);
+			try {
+				Thread.sleep(40);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+		}
+		
+	}
 	
 }

@@ -5,8 +5,16 @@ public class Tile {
 	private int height;
 	private double waterLevel;
 	
+	public boolean isUpdated;
 	
-	
+	public boolean isUpdated() {
+		return isUpdated;
+	}
+
+	public void setUpdated(boolean isUpdated) {
+		this.isUpdated = isUpdated;
+	}
+
 	public double getWaterLevel() {
 		return waterLevel;
 	}
