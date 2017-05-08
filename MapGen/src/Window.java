@@ -49,7 +49,7 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	private void init()
 	{
 		map = new Map();
-		map.generate(20);
+		map.generate(17);
 		this.add(panel);
 		this.setSize(width, height);
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -75,47 +75,37 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		int min = 255;
 		int max = 1;
 		
-		for (int i = 0; i < map.getGridSize(); i++)
-			for (int j = 0; j < map.getGridSize(); j++)
-			{
-				 int d = (int) ((map.map[i][j].getHeight()*255)/map.maxheight);
-	             if (max < d)
-	            	 max = d;
-	             if (min > d)
-	             	min = d;
-	             sWater+=map.map[i][j].getWaterLevel();
-	             
-			}
+		
 		
 		for (int i = 0; i < width/mod+2; i++)
             for (int j = 0; j < height/mod+2; j++)
             {    
                 
-                tileX = (i + cameraX/mod)%map.getGridSize();
-                tileY = (j + cameraY/mod)%map.getGridSize();
+                tileX = (i + cameraX/mod);
+                tileY = (j + cameraY/mod);
                 
                 
                 
-                if(tileX<0)
-                	tileX = (i + cameraX/mod)%(map.getGridSize()) + map.getGridSize();
-                
-                if(tileY<0)
-                	tileY = (j + cameraY/mod)%(map.getGridSize()) + map.getGridSize();
-                
-                int d = (int) ((map.map[tileX][tileY].getHeight()*255)/map.maxheight);
-                d = ((d-min)*255)/(max-min);
-                g.setColor(new Color(d,d,d));
-                
-                if(map.map[tileX][tileY].getWaterLevel()>0)
+            
+                int d = 0;
+                try
                 {
-                	int lvl = 255 - (int)map.map[tileX][tileY].getWaterLevel();
-                	if (lvl < 50)
-                		lvl = 50;
-                	g.setColor(new Color(0,0,lvl));
+                 d = (map.map[tileX][tileY].getHeight());
+                 if (d>255)
+                	 d = 255;
+                 if (d < 0)
+                	 d = 0;
                 }
+                catch(Exception e){
+                	
+                }
+                
+                g.setColor(new Color(0,d,0));
+                
+                
+              
                
-                if(tileX == 0 || tileY == 0)
-                	g.setColor(Color.RED);
+         
                 g.fillRect(i*mod - cameraX % mod, j*mod - cameraY % mod, mod, mod);
             }
 		try
@@ -127,7 +117,7 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 			int y = ((int)(cameraY+panel.getMousePosition().getY())/mod)%map.getGridSize();
 			if(y < 0)
 				y+=map.getGridSize();
-			double h = (map.map[x][y].getHeight()/10);
+			int h = map.map[x][y].getHeight();
 			double w = map.map[x][y].getWaterLevel();
 		g.drawString( "MOUSE POS "+panel.getMousePosition().getX() + " " + panel.getMousePosition().getY(), 10, 20); 
 		g.drawString("TILE POS [" + x + ";" + y + "] H [" + h + "] W [" + w+"]"+"; SumWater: "+sWater,10, 30);
@@ -168,10 +158,10 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	@Override
 	public void run() {
 	
+		map.start();
 		while(isRunning)
 		{
 			check();
-			//map.updateWater();    //water physics shut off for better performance
 			draw();
 		//	System.out.println(this.getMousePosition().getX()+ " " + this.getMousePosition().getY());
 			try {
@@ -196,7 +186,7 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 			int y = ((cameraY+e.getY())/mod)%map.getGridSize();
 			if(y<0)
 				y+=map.getGridSize();
-			map.addWaterSource(x, y);
+
 		}
 		
 	}
@@ -285,8 +275,8 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 			map.waterLevel += 10;
 		if(45 == e.getKeyCode())
 			map.waterLevel -= 10;
-		if(66 == e.getKeyCode())
-			map.blur(10);
+		
+			
 	}
 
 	@Override

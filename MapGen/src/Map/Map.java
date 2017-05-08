@@ -3,334 +3,151 @@ package Map;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Map {
+public class Map implements Runnable {
 	
-	private final int gridSize = 1000;
+	private final int gridSize = 1024;
 	
 	public int getGridSize() {
 		return gridSize;
 	}
 
-	public Tile[][] map = new Tile[gridSize][gridSize];
+	public Tile[][] map = new Tile[gridSize + 1][gridSize + 1];
 	public ArrayList<WaterSource> wc = new ArrayList<WaterSource>();
-	
-	
+	public ArrayList<Tile> updTiles = new ArrayList<Tile>();
+	public int maxheight = 255;
+	public int waterLevel = 50000;
+	public int firstNoise = maxheight/8;
+	private int height = maxheight/2;
+	public double reductor = 0.1;
+	private long startTime;
+	private Random rand = new Random();
 	//the actual function
+	
 	public void generate(long genSeed)
 	{
-		//seed = genSeed;
-		rnd = new Random(genSeed);
-		midpointDisplacementGen();
-		blur(300);
-		//midElevate(gridSize*5);
-		//blur(1);
-		//flattenWater();
+		Random r = new Random();
+		map[0][0] = new Tile(r.nextInt(maxheight));
+		map[gridSize][0] = new Tile(r.nextInt(maxheight));
+		map[0][gridSize] = new Tile(r.nextInt(maxheight));
+		map[gridSize][gridSize] = new Tile(r.nextInt(maxheight));
+		midpointDisplacementGen(0,0,gridSize,gridSize);
+		
 	}
 	
-	private void midElevate(int midElevation) {
-		double furthestDist = gridSize*Math.sqrt(2);
-		//double elevPerMeter = midElevation/furthestDist;
-		for(int y = 0; y<gridSize; y++)
-			for(int x = 0; x<gridSize; x++)
-			{
-				map[x][y].setHeight((int) (map[x][y].getHeight()+midElevation*(furthestDist - distance(x, y, gridSize/2, gridSize/2))/furthestDist));
-			}
-				
+	public void square(int x, int y, int x1, int y1)
+	{
+		int halfX = (x + x1)/2;
+		int halfY = (y + y1)/2;
+	
+		
+		int mHeight = (map[x][y].getHeight() +  map[x1][y].getHeight() +  map[x][y1].getHeight()+  map[x1][y1].getHeight())/4;
+		
+		map[halfX][halfY] = new Tile(mHeight + rand.nextInt(height) - height/2);
+		
+		
+		
+		
+		
+	}
+	
+	public void diamond(int x, int y, int offset)
+	{
+		
+		
+		int success = 0;
+		
+		int mHeight = 0;    
+		try
+		{
+			mHeight += map[x-offset][y].getHeight();
+			success ++;
+		} 
+		catch(Exception e)
+		{
+			
+		}
+		
+		try
+		{
+			mHeight +=  map[x][y-offset].getHeight();
+			success ++;
+		} 
+		catch(Exception e)
+		{
+			
+		}
+		
+		try
+		{
+			mHeight += map[x][y + offset].getHeight();
+			success ++;
+		} 
+		catch(Exception e)
+		{
+			
+		}
+		
+		try
+		{
+			mHeight += map[x + offset][y].getHeight();
+			success ++;
+		} 
+		catch(Exception e)
+		{
+			
+		}
+		
+		mHeight = mHeight/success;
+		
+		map[x][y] = new Tile(mHeight + rand.nextInt(height) - height/2);
 	}
 
-	//private long seed;
-	Random rnd;
-	
-	public void addWaterSource(int x, int y)
+	public void midpointDisplacementGen(int x, int y, int x1, int y1)
 	{
-		wc.add(new WaterSource(x,y));
+		
+		if ((x1-x) > 1 && (y1-y) > 1)
+		{
+			square(x,y,x1, y1);
+			
+			int halfX = (x + x1)/2;
+			int halfY = (y + y1)/2;
+			int offset = halfX - x;
+			
+			
+			diamond(x, halfY, offset);
+			diamond(halfX, y, offset);
+			diamond(x1, halfY, offset);
+			diamond(halfX, y1, offset);
+			
+			midpointDisplacementGen(x,y,halfX,halfY);
+			midpointDisplacementGen(halfX,y,x1,halfY);
+			midpointDisplacementGen(halfX,halfY,x1,y1);
+			midpointDisplacementGen(x,halfY,halfX,y1);
+		}
 	}
-	
-	public int getAverageSurround(int x, int y, int deltax, int deltay)
-	{
-		int sum = 0;
-		int s = 0;
-		
-		int nextx = x - deltax;
-		int nexty = y;
-		try
-		{
-			sum+=map[nextx%gridSize][nexty%gridSize].getHeight();
-			s++;
-		}catch(Exception e){}
-		
-		nextx = x+deltax;
-		try
-		{
-			sum+=map[nextx%gridSize][nexty%gridSize].getHeight();
-			s++;
-		}catch(Exception e){}
-		
-		nextx = x;
-		nexty = y - deltay;
-		try
-		{
-			sum+=map[nextx%gridSize][nexty%gridSize].getHeight();
-			s++;
-		}catch(Exception e){}
-		
-		nexty = y + deltay;
-		try
-		{
-			sum+=map[nextx%gridSize][nexty%gridSize].getHeight();
-			s++;
-		}catch(Exception e){}
-		
-		return sum/s;
 
-	}
 	
-	public void doMidPoint(int x1, int y1, int x2, int y2, int noise)
+	public void start()
 	{
-		int x = (x1+x2)/2;
-		int y = (y1+y2)/2;
-
-				//corners
-		map[x1][y1].setHeight(map[x1][y1].getHeight()+rnd.nextInt(noise*2)-noise);
-		map[x2][y2].setHeight(map[x2][y2].getHeight()+rnd.nextInt(noise*2)-noise);
-		map[x1][y2].setHeight(map[x1][y2].getHeight()+rnd.nextInt(noise*2)-noise);
-		map[x2][y1].setHeight(map[x2][y1].getHeight()+rnd.nextInt(noise*2)-noise);
 		
-		double midAvg = (map[x1][y1].getHeight()+
-				map[x2][y2].getHeight()+
-				map[x1][y2].getHeight()+
-				map[x2][y1].getHeight())/4;
-		
-		int smallNoise = noise/2;
-		
-		if(smallNoise==0)
-			smallNoise = 1;
-		
-		map[x][y].setHeight(midAvg+rnd.nextInt(noise*2)-noise);
-		
-		
-		int deltax = (x2 - x1)/2;
-		int deltay = deltax;
-		
-		int curx = x;
-		int cury = y1;
-		map[curx][cury].setHeight(getAverageSurround(curx ,cury, deltax, deltay)+rnd.nextInt(smallNoise*2)-smallNoise);
-		curx = x1;
-		cury = y;
-		map[curx][cury].setHeight(getAverageSurround(curx ,cury, deltax, deltay)+rnd.nextInt(smallNoise*2)-smallNoise);
-		curx = x;
-		cury = y2;
-		map[curx][cury].setHeight(getAverageSurround(curx ,cury, deltax, deltay)+rnd.nextInt(smallNoise*2)-smallNoise);
-		curx = x1;
-		cury = y;
-		
-		if (Math.abs(x1-x2)>1)
+	}
+	@Override
+	public void run() {
+		while (true)
 		{
-			int nnoise = (int) (noise*reductor);
-			if (nnoise<2)
-				nnoise = 1;
-			doMidPoint(x1, y1, x, y, nnoise);
-			doMidPoint(x, y1, x2, y, nnoise);
-			doMidPoint(x1, y, x, y2, nnoise);
-			doMidPoint(x, y, x2, y2, nnoise);
-		}
-		
-	}
-	
-	public void addWater(int x, int y, double amount)
-	{
-		map[x][y].setWaterLevel(map[x][y].getWaterLevel()+amount);
-	}
-	
-	public void removeWater(int x, int y, double amount)
-	{
-		map[x][y].setWaterLevel(map[x][y].getWaterLevel()-amount);
-		if(map[x][y].getWaterLevel()<0)
-			map[x][y].setWaterLevel(0);
-	}
-	
-	public void updateWater()
-	{
-		int targetX, targetY, newX, newY;
-		double sumWater, delta;
-		boolean found;
-		
-		
-		
-		
-		for (WaterSource w : wc)
-		{
-			//map[w.getX()][w.getY()].setWaterLevel(map[w.getX()][w.getY()].getWaterLevel() + 1);
-			addWater(w.getX(), w.getY(), 250);
-		}
-		
-		for(int y = 0; y<gridSize; y++)
-			for(int x = 0; x<gridSize; x++)
-			{
-				if(map[x][y].getWaterLevel()>0)
-				{
-					
-					found = false;
-					targetX = x;
-					targetY = y;
-					//System.out.println(1);
-					
-					
-					newX = (x+1)%gridSize;
-					if(newX<0)
-						newX+=gridSize;
-					newY = y;
-					
-					if(((map[newX][newY].getHeight() + map[newX][newY].getWaterLevel()) < (map[targetX][targetY].getHeight()+map[targetX][targetY].getWaterLevel())))
-					{
-						targetX = newX;
-						targetY = newY;
-						found = true;
-						//System.out.println(2);
-					}
-					
-					newX = (x-1)%gridSize;
-					if(newX<0)
-						newX+=gridSize;
-					newY = y;
-					
-					if(((map[newX][newY].getHeight() + map[newX][newY].getWaterLevel()) < (map[targetX][targetY].getHeight()+map[targetX][targetY].getWaterLevel())))
-					{
-						targetX = newX;
-						targetY = newY;
-						found = true;
-						//System.out.println(3);
-					}
-					
-					newX = x;
-					newY = (y+1)%gridSize;
-					if(newY<0)
-						newY+=gridSize;
-					
-					if(((map[newX][newY].getHeight() + map[newX][newY].getWaterLevel()) < (map[targetX][targetY].getHeight()+map[targetX][targetY].getWaterLevel())))
-					{
-						targetX = newX;
-						targetY = newY;
-						found = true;
-						//System.out.println(4);
-					}
-					
-					newX = x;
-					newY = (y-1)%gridSize;
-					if(newY<0)
-						newY+=gridSize;
-					
-					if(((map[newX][newY].getHeight() + map[newX][newY].getWaterLevel()) < (map[targetX][targetY].getHeight()+map[targetX][targetY].getWaterLevel())))
-					{
-						targetX = newX;
-						targetY = newY;
-						found = true;
-						//System.out.println(5);
-					}
-					
-					if(found)
-					{
-						delta = map[x][y].getHeight() - map[targetX][targetY].getHeight();
-						sumWater = map[x][y].getWaterLevel() + map[targetX][targetY].getWaterLevel();
-						if(delta>0)
-							{
-								if(sumWater>delta)
-								{
-									map[targetX][targetY].setWaterLevel(delta);
-									sumWater-=delta;
-									map[x][y].setWaterLevel(sumWater/2); // izmenil ctobi norm bilo 
-									addWater(targetX, targetY, sumWater/2);
-								}
-								else
-								{
-									map[x][y].setWaterLevel(0);
-									map[targetX][targetY].setWaterLevel(sumWater);
-								}
-							}
-						else
-							{
-								if(sumWater>delta)
-								{
-									map[x][y].setWaterLevel(delta);
-									sumWater-=delta;
-									map[targetX][targetY].setWaterLevel(sumWater/2);
-									addWater(x, y, sumWater/2);
-								}
-								else
-								{
-									map[targetX][targetY].setWaterLevel(0);
-									map[x][y].setWaterLevel(sumWater);
-								}
-							}
-						
-					}
-				}
-			}
-		}
-	
-	public int maxheight = 100000;
-	public int waterLevel = 50000;
-	public int firstNoise = maxheight/2;
-	public double reductor = 0.1;
-	
-	public void midpointDisplacementGen()
-	{
-		
-		for (int i=0; i < gridSize; i++)
-			for (int j=0; j <gridSize; j++)
-			{
-				map[i][j] = new Tile(maxheight/2);
+			startTime = System.currentTimeMillis();
+		//		updateWater();
+			long deltaTime = System.currentTimeMillis() - startTime;
+		//	System.out.println(deltaTime);
+			try {
+				Thread.sleep(40);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		
-		doMidPoint(0,0,gridSize-1,gridSize-1, firstNoise);
-	}
-	
-	public void blur(int amount)
-	{
-		for(int a = 0; a<amount; a++)
-		{
-			for (int i=0; i < gridSize; i++)
-				for (int j=0; j <gridSize; j++)
-				{
-					map[(i+rnd.nextInt(2))%gridSize][(j+rnd.nextInt(2))%gridSize].setHeight(
-							(map[i][j].getHeight()+
-									map[(i+1)%gridSize][j].getHeight()+
-									map[i][(j+1)%gridSize].getHeight()+
-									map[(i+1)%gridSize][(j+1)%gridSize].getHeight()
-									)/4);
-				}
 		}
-	}
-	
-	public void flattenWater()
-	{
-		for (int i=0; i < gridSize; i++)
-			for (int j=0; j <gridSize; j++)
-				if(map[i][j].getHeight()<=waterLevel)
-					map[i][j].setHeight(waterLevel);
-	}
-	
-	public void sharpen()
-	{
-		double realmax = 0;
-		for (int i=0; i < gridSize; i++)
-			for (int j=0; j <gridSize; j++)
-				if(map[i][j].getHeight()>realmax)
-					realmax = map[i][j].getHeight();
 		
-		double coeff = (maxheight)/realmax;
-		for (int i=0; i < gridSize; i++)
-			for (int j=0; j <gridSize; j++)
-			{
-				int x = i;
-				int y = j;
-					map[i][j].setHeight((int) (map[i][j].getHeight()*coeff));
-			}
 	}
-	
-	private double distance(int x1, int y1, int x2, int y2)
-    {
-        return Math.sqrt( (x2-x1)*(x2-x1) + (y2-y1)*(y2-y1) );
-    }
 	
 }

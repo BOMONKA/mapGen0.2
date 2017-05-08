@@ -2,9 +2,18 @@ package Map;
 
 public class Tile {
 	
-	private double height;
+	private int height;
 	private double waterLevel;
 	
+	public boolean isUpdated;
+	
+	public boolean isUpdated() {
+		return isUpdated;
+	}
+
+	public void setUpdated(boolean isUpdated) {
+		this.isUpdated = isUpdated;
+	}
 
 	public double getWaterLevel() {
 		return waterLevel;
@@ -20,12 +29,12 @@ public class Tile {
 		this.waterLevel = 0;
 	}
 	
-	public double getHeight()
+	public int getHeight()
 	{
 		return height;
 	}
 	
-	public void setHeight(double height)
+	public void setHeight(int height)
 	{
 		this.height = height;
 	}
