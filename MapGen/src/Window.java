@@ -103,7 +103,8 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
                 g.setColor(new Color(0,d,0));
                 
                 
-              
+              if (tileX == 0 || tileY == 0 || tileX == map.gridSize || tileY == map.gridSize)
+            	  g.setColor(Color.RED);
                
          
                 g.fillRect(i*mod - cameraX % mod, j*mod - cameraY % mod, mod, mod);
