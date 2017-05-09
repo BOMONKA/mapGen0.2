@@ -64,8 +64,9 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		panel.addMouseMotionListener(this);
 		panel.addMouseListener(this);
 		panel.addKeyListener(this);
-		wm = map.saveToWorldMap();
-		//wm.saveMap();
+		wm = new WorldMap();
+	//	wm = map.saveToWorldMap();
+	//	wm.saveMap();
 		//wm.test();
 	}
 
@@ -99,14 +100,15 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
                 {
                  //d = (map.map[tileX][tileY].getHeight());
                 d = (wm.getTile(tileX, tileY).getHeight());
-                //System.out.println(d);
+                
+               // System.out.println(d);
                  if (d>255)
                 	 d = 255;
                  if (d < 0)
                 	 d = 0;
                 }
                 catch(Exception e){
-                	
+              //  	e.printStackTrace();
                 }
                 
                 g.setColor(new Color(0,d,0));
@@ -149,8 +151,15 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		panel.getGraphics().drawImage(buffer, 0, 0, null);
 		panel.setPreferredSize(new Dimension(width,height));
 		panel.setVisible(true);
-		this.setTitle("Chunks loaded: "+wm.getLoadedChunks());
-		//wm.clearChunkmemory();
+	//	this.setTitle("Chunks loaded: "+wm.getLoadedChunks());
+		try
+		{
+		System.out.println(wm.clearChunkmemory());
+		}
+		catch(Exception e)
+		{
+			
+		}
 	}
 	
 	public void start()

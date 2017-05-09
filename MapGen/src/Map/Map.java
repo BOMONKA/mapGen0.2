@@ -50,9 +50,9 @@ public class Map implements Runnable {
 		//mountainGen(x, 0, x1, gridSize, 1300);
 		
 	//	map[gridSize/2][gridSize/2] = new Tile(255);
-		midpointDisplacementGen(0,0,gridSize,gridSize, maxheight);
-		saveToWorldMap();
-		wm.saveMap();
+	//	midpointDisplacementGen(0,0,gridSize,gridSize, maxheight);
+	//	saveToWorldMap();
+	//	wm.saveMap();
 	//	blur(100);
 		
 	}
@@ -258,7 +258,7 @@ public class Map implements Runnable {
 		
 		generate(0);
 		System.out.println("done");
-		blur(10);
+	//	blur(10);
 		while (true)
 		{
 			startTime = System.currentTimeMillis();

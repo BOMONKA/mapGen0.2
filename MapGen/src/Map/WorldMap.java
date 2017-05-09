@@ -27,7 +27,7 @@ public class WorldMap {
 	public int worldHeight = 30;
 	private ArrayList<Chunk> loadedChunks = new ArrayList<Chunk>();
 	private int chunkSaveTime = 1000;
-	private int maxloadedChunks = 1000;
+	private int maxloadedChunks = 10;
 	
 	public int getWidth()
 	{
@@ -197,7 +197,7 @@ public class WorldMap {
 			fis = new FileInputStream(saveTo+cVec.x+"-"+cVec.y+".chunk");
 			ObjectInputStream oin = new ObjectInputStream(fis);
 			c = (Chunk) oin.readObject();
-			//System.out.println("read chunk "+cVec.x + "-" +cVec.y+" Chunk[0][0] = "+c.data[0][0].getHeight());
+			System.out.println("read chunk "+cVec.x + "-" +cVec.y+" Chunk[0][0] = "+c.data[11][11].getHeight());
 		} catch (Exception e) {
 			//e.printStackTrace();
 		}
