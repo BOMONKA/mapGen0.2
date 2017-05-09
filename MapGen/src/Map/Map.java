@@ -7,9 +7,10 @@ import java.util.Vector;
 
 public class Map implements Runnable {
 	
-	public final int gridSize = 2048;
+	public final int gridSize = 128;
 	
 	public int getGridSize() {
+
 		return gridSize;
 	}
 
@@ -25,6 +26,7 @@ public class Map implements Runnable {
 	private double ldist;
 	private Random rand = new Random(); 
 	private ArrayList<Point> mountains = new ArrayList<Point>();
+	private WorldMap wm = new WorldMap();
 	
 	
 	//the actual function
@@ -45,12 +47,26 @@ public class Map implements Runnable {
 		System.out.println(x);
 		System.out.println(x1);
 		
-		mountainGen(x, 0, x1, gridSize, 1300);
+		//mountainGen(x, 0, x1, gridSize, 1300);
 		
 	//	map[gridSize/2][gridSize/2] = new Tile(255);
 		midpointDisplacementGen(0,0,gridSize,gridSize, maxheight);
+		saveToWorldMap();
+		wm.saveMap();
 	//	blur(100);
 		
+	}
+	
+	public WorldMap saveToWorldMap()
+	{
+		for(int y = 0; y<=gridSize; y++)
+			for(int x = 0; x<=gridSize; x++)
+			{
+				wm.setTile(x, y, map[x][y]);
+				//System.out.println("Cleared out of memory "+wm.clearChunkmemory());
+			}
+		//System.out.println("done loading to file");
+		return wm;
 	}
 	
 	public void mountainGen(int x, int y, int x1, int y1, int offset)

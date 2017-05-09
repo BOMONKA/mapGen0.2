@@ -17,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import Map.Map;
+import Map.WorldMap;
 
 public class Window extends JFrame implements Runnable, MouseListener, MouseWheelListener, MouseMotionListener, KeyListener {
 	
@@ -31,6 +32,7 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	private boolean isPressed = false;
 	JPanel panel = new JPanel();
 	private boolean tick = false;
+	private WorldMap wm;
 	
 	public Window(int height , int width)
 	{
@@ -46,6 +48,8 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		init();
 	}
 	
+	
+	
 	private void init()
 	{
 		map = new Map();
@@ -60,6 +64,9 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		panel.addMouseMotionListener(this);
 		panel.addMouseListener(this);
 		panel.addKeyListener(this);
+		wm = map.saveToWorldMap();
+		//wm.saveMap();
+		//wm.test();
 	}
 
 	//private int s = 4000;
@@ -90,7 +97,9 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
                 int d = 0;
                 try
                 {
-                 d = (map.map[tileX][tileY].getHeight());
+                 //d = (map.map[tileX][tileY].getHeight());
+                d = (wm.getTile(tileX, tileY).getHeight());
+                //System.out.println(d);
                  if (d>255)
                 	 d = 255;
                  if (d < 0)
@@ -140,6 +149,8 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		panel.getGraphics().drawImage(buffer, 0, 0, null);
 		panel.setPreferredSize(new Dimension(width,height));
 		panel.setVisible(true);
+		this.setTitle("Chunks loaded: "+wm.getLoadedChunks());
+		//wm.clearChunkmemory();
 	}
 	
 	public void start()

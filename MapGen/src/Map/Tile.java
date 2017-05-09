@@ -1,6 +1,8 @@
 package Map;
 
-public class Tile {
+import java.io.Serializable;
+
+public class Tile implements Serializable {
 	
 	private int height;
 	private double waterLevel;
