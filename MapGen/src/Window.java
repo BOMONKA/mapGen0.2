@@ -17,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import Map.Map;
+import Map.WorldMap;
 
 public class Window extends JFrame implements Runnable, MouseListener, MouseWheelListener, MouseMotionListener, KeyListener {
 	
@@ -60,6 +61,8 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		panel.addMouseMotionListener(this);
 		panel.addMouseListener(this);
 		panel.addKeyListener(this);
+		WorldMap wm = new WorldMap();
+		wm.test();
 	}
 
 	//private int s = 4000;
