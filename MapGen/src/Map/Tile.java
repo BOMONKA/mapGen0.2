@@ -1,6 +1,8 @@
 package Map;
 
-public class Tile {
+import java.io.Serializable;
+
+public class Tile implements Serializable {
 	
 	private int height;
 	private double waterLevel;
@@ -28,6 +30,13 @@ public class Tile {
 		this.height = height;
 		this.waterLevel = 0;
 	}
+	
+	/*public Tile(Tile reference)
+	{
+		//this.height = reference.height;
+		//this.waterLevel = reference.waterLevel;
+		
+	}*/
 	
 	public int getHeight()
 	{

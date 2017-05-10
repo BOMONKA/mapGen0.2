@@ -7,13 +7,14 @@ import java.util.Vector;
 
 public class Map implements Runnable {
 	
-	public final int gridSize = 2048;
+	public final int gridSize = 8192;
 	
 	public int getGridSize() {
+
 		return gridSize;
 	}
 
-	public Tile[][] map = new Tile[gridSize + 1][gridSize + 1];
+	//public Tile[][] map = new Tile[gridSize + 1][gridSize + 1];
 	public ArrayList<WaterSource> wc = new ArrayList<WaterSource>();
 	public ArrayList<Tile> updTiles = new ArrayList<Tile>();
 	public int maxheight = 255;
@@ -25,33 +26,50 @@ public class Map implements Runnable {
 	private double ldist;
 	private Random rand = new Random(); 
 	private ArrayList<Point> mountains = new ArrayList<Point>();
+	public WorldMap wm = new WorldMap();
 	
 	
 	//the actual function
 	
-	public void generate(long genSeed)
+	public void generate(long genSeed, WorldMap worldmap)
 	{
+		wm = worldmap;
 		ldist = distance(0, 0, gridSize/2, gridSize/2);
 		rand = new Random(genSeed);
 		
-		map[0][0] = new Tile(rand.nextInt(maxheight));
-		map[gridSize][0] = new Tile(rand.nextInt(maxheight));
-		map[0][gridSize] = new Tile(rand.nextInt(maxheight));
-		map[gridSize][gridSize] = new Tile(rand.nextInt(maxheight));
+		//map[0][0] = new Tile(rand.nextInt(maxheight));
+		//map[gridSize][0] = new Tile(rand.nextInt(maxheight));
+		//map[0][gridSize] = new Tile(rand.nextInt(maxheight));
+		//map[gridSize][gridSize] = new Tile(rand.nextInt(maxheight));
 		
-	//	setHeight();
+		setHeight();
 		int x = rand.nextInt(gridSize);
 		int x1 = rand.nextInt(gridSize);
-		System.out.println(x);
-		System.out.println(x1);
+		//System.out.println(x);
+		//System.out.println(x1);
 		
-		mountainGen(x, 0, x1, gridSize, 1300);
+		//mountainGen(x, 0, x1, gridSize, 1300);
 		
-	//	map[gridSize/2][gridSize/2] = new Tile(255);
+		wm.setTile(gridSize/2, gridSize/2, new Tile(255));
+		//map[gridSize/2][gridSize/2] = new Tile(255);
 		midpointDisplacementGen(0,0,gridSize,gridSize, maxheight);
+	//	saveToWorldMap();
+	//	wm.saveMap();
 	//	blur(100);
 		
 	}
+	
+	/*public WorldMap saveToWorldMap()
+	{
+		for(int y = 0; y<=gridSize; y++)
+			for(int x = 0; x<=gridSize; x++)
+			{
+				wm.setTile(x, y, map[x][y]);
+				//System.out.println("Cleared out of memory "+wm.clearChunkmemory());
+			}
+		//System.out.println("done loading to file");
+		return wm;
+	}*/
 	
 	public void mountainGen(int x, int y, int x1, int y1, int offset)
 	{
@@ -77,25 +95,17 @@ public class Map implements Runnable {
 	public void setHeight()
 	{
 		
-		map[0][0] = new Tile(0);
-		map[gridSize][0] = new Tile(0);
-		map[0][gridSize] = new Tile(0);
-		map[gridSize][gridSize] = new Tile(0);
-		for (int i = 0; i < gridSize; i++)
+		//map[0][0] = new Tile(0);
+		//map[gridSize][0] = new Tile(0);
+		//map[0][gridSize] = new Tile(0);
+		//map[gridSize][gridSize] = new Tile(0);
+		for (int i = 0; i < gridSize+1; i++)
 		{
-			map[i][0] = new Tile(0);
-		}
-		for (int i = 0; i < gridSize; i++)
-		{
-			map[0][i] = new Tile(0);
-		}
-		for (int i = 0; i < gridSize; i++)
-		{
-			map[gridSize][i] = new Tile(0);
-		}
-		for (int i = 0; i < gridSize; i++)
-		{
-			map[i][gridSize] = new Tile(0);
+			wm.setTile(i, 0, new Tile(0)); //map[i][0] = new Tile(0);
+			wm.setTile(0, i, new Tile(0));
+			wm.setTile(i, gridSize, new Tile(0));
+			wm.setTile(gridSize, i, new Tile(0));
+			//System.out.println("set height");
 		}
 	}
 	
@@ -105,12 +115,14 @@ public class Map implements Runnable {
 		int halfY = (y + y1)/2;
 
 		
-		int mHeight = (map[x][y].getHeight() +  map[x1][y].getHeight() +  map[x][y1].getHeight()+  map[x1][y1].getHeight())/4;
+		//int mHeight = (map[x][y].getHeight() +  map[x1][y].getHeight() +  map[x][y1].getHeight()+  map[x1][y1].getHeight())/4;
+		int mHeight = (wm.getTile(x,y).getHeight() + wm.getTile(x1,y).getHeight() + wm.getTile(x,y1).getHeight() + wm.getTile(x1,y1).getHeight())/4;
 		
 		
-		if (map[halfX][halfY] == null)
+		if (wm.getTile(halfX,halfY) == null)
 		{
-			map[halfX][halfY] = new Tile(mHeight + rand.nextInt(noise) - (int)((noise/2)) );	
+			wm.setTile(halfX, halfY, new Tile(mHeight + rand.nextInt(noise) - (int)((noise/2)) )); //   map[halfX][halfY] = new Tile(mHeight + rand.nextInt(noise) - (int)((noise/2)) );	
+			//System.out.println(wm.getTile(halfX, halfY).getHeight());
 		}
 	}
 	
@@ -125,7 +137,8 @@ public class Map implements Runnable {
 		int mHeight = 0;    
 		try
 		{
-			mHeight += map[x-offset][y].getHeight();
+			//mHeight += map[x-offset][y].getHeight();
+			mHeight += wm.getTile(x - offset, y).getHeight();
 			success ++;
 		} 
 		catch(Exception e)
@@ -135,7 +148,8 @@ public class Map implements Runnable {
 		
 		try
 		{
-			mHeight +=  map[x][y-offset].getHeight();
+			//mHeight +=  map[x][y-offset].getHeight();
+			mHeight += wm.getTile(x, y - offset).getHeight();
 			success ++;
 		} 
 		catch(Exception e)
@@ -145,7 +159,8 @@ public class Map implements Runnable {
 		
 		try
 		{
-			mHeight += map[x][y + offset].getHeight();
+			//mHeight += map[x][y + offset].getHeight();
+			mHeight += wm.getTile(x, y+offset).getHeight();
 			success ++;
 		} 
 		catch(Exception e)
@@ -155,7 +170,8 @@ public class Map implements Runnable {
 		
 		try
 		{
-			mHeight += map[x + offset][y].getHeight();
+			//mHeight += map[x + offset][y].getHeight();
+			mHeight += wm.getTile(x + offset, y).getHeight();
 			success ++;
 		} 
 		catch(Exception e)
@@ -165,9 +181,9 @@ public class Map implements Runnable {
 		
 		
 		mHeight = mHeight/success;
-		if (map[x][y] == null)
+		if (wm.getTile(x, y) == null)
 		{
-			map[x][y] = new Tile(mHeight + rand.nextInt(noise) - (int)((noise/2)));
+			wm.setTile(x, y, new Tile(mHeight + rand.nextInt(noise) - (int)((noise/2))));
 		}
 	}
 	
@@ -213,7 +229,7 @@ public class Map implements Runnable {
 			
 		}
 	}
-	public void blur(int amount)
+	/*public void blur(int amount)
 	{
 		int gridSize = this.gridSize + 1;
 		Random rnd = new Random();
@@ -230,7 +246,7 @@ public class Map implements Runnable {
 									)/4);
 				}
 		}
-	}
+	}*/
 	
 	
 	public void start()
@@ -240,9 +256,9 @@ public class Map implements Runnable {
 	@Override
 	public void run() {
 		
-		generate(0);
+		//generate(0);
 		System.out.println("done");
-		blur(10);
+	//	blur(10);
 		while (true)
 		{
 			startTime = System.currentTimeMillis();
