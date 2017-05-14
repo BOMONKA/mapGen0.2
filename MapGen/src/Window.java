@@ -17,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import Map.Map;
+import Map.WorldMap;
 
 public class Window extends JFrame implements Runnable, MouseListener, MouseWheelListener, MouseMotionListener, KeyListener {
 	
@@ -31,6 +32,7 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	private boolean isPressed = false;
 	JPanel panel = new JPanel();
 	private boolean tick = false;
+	private WorldMap wm;
 	
 	public Window(int height , int width)
 	{
@@ -46,6 +48,8 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		init();
 	}
 	
+	
+	
 	private void init()
 	{
 		map = new Map();
@@ -60,6 +64,12 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		panel.addMouseMotionListener(this);
 		panel.addMouseListener(this);
 		panel.addKeyListener(this);
+		wm = new WorldMap();
+		map.wm = wm;
+		map.generate(17, wm, 10, 10, 33); // (n^2)+1
+		//map.generate(18, wm, 100, 100, 101); 
+		//map.generate(19, wm, 0, 0, 1025);
+		//wm.saveMap();
 	}
 
 	//private int s = 4000;
@@ -88,23 +98,35 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
                 
             
                 int d = 0;
+               g.setColor(new Color(0,0,150));
                 try
                 {
-                 d = (map.map[tileX][tileY].getHeight());
-                 if (d>255)
-                	 d = 255;
-                 if (d < 0)
-                	 d = 0;
+                 //d = (map.map[tileX][tileY].getHeight());
+                d = (wm.getTile(tileX, tileY).getHeight());
+                
+               // System.out.println(d);
+                if(d>map.oceanlevel)
+	                {
+		                 if (d>map.maxheight)
+		                	 d = map.maxheight;
+		                 if (d < 0)
+		                	 d = 0;
+		                 d = (int) ((d*255.0)/map.maxheight); //remove /10
+		                 g.setColor(new Color(0,d,0));
+	                }
                 }
                 catch(Exception e){
-                	
+              //  
                 }
                 
-                g.setColor(new Color(0,d,0));
                 
                 
-              if (tileX == 0 || tileY == 0 || tileX == map.gridSize || tileY == map.gridSize)
-            	  g.setColor(Color.RED);
+               
+                //System.out.println(d);
+                
+                
+              //if (tileX == 0 || tileY == 0 || tileX == map.gridSize || tileY == map.gridSize)
+            	  //g.setColor(Color.RED);
                
          
                 g.fillRect(i*mod - cameraX % mod, j*mod - cameraY % mod, mod, mod);
@@ -118,10 +140,10 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 			int y = ((int)(cameraY+panel.getMousePosition().getY())/mod)%map.getGridSize();
 			if(y < 0)
 				y+=map.getGridSize();
-			int h = map.map[x][y].getHeight();
-			double w = map.map[x][y].getWaterLevel();
-		g.drawString( "MOUSE POS "+panel.getMousePosition().getX() + " " + panel.getMousePosition().getY(), 10, 20); 
-		g.drawString("TILE POS [" + x + ";" + y + "] H [" + h + "] W [" + w+"]"+"; SumWater: "+sWater,10, 30);
+			//int h = map.map[x][y].getHeight();
+			//double w = map.map[x][y].getWaterLevel();
+		//g.drawString( "MOUSE POS "+panel.getMousePosition().getX() + " " + panel.getMousePosition().getY(), 10, 20); 
+		//g.drawString("TILE POS [" + x + ";" + y + "] H [" + h + "] W [" + w+"]"+"; SumWater: "+sWater,10, 30);
 		
 		
 		 g.drawRect(x*mod - cameraX % mod, y*mod - cameraY % mod, mod, mod);
@@ -140,6 +162,15 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 		panel.getGraphics().drawImage(buffer, 0, 0, null);
 		panel.setPreferredSize(new Dimension(width,height));
 		panel.setVisible(true);
+		this.setTitle("Chunks loaded: "+wm.getLoadedChunks());
+		try
+		{
+		//System.out.println(wm.clearChunkmemory());
+		}
+		catch(Exception e)
+		{
+			
+		}
 	}
 	
 	public void start()
@@ -271,11 +302,7 @@ public class Window extends JFrame implements Runnable, MouseListener, MouseWhee
 	@Override
 	public void keyPressed(KeyEvent e) {
 		// TODO Auto-generated method stub
-		System.out.println(e.getKeyCode());
-		if(61 == e.getKeyCode())
-			map.waterLevel += 10;
-		if(45 == e.getKeyCode())
-			map.waterLevel -= 10;
+
 		
 			
 	}
